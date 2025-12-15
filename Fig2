@@ -1,0 +1,244 @@
+#### Fig2A
+library(dplyr)
+library(ggplot2)
+library(ggalluvial)
+library(tidyr)
+set.seed(1)
+load("Fig2A.sankey_by_sample_data.Rdata")
+p <- ggplot(df.fig,aes(axis1 = bigscape_type, axis2 = new_Phylum,y = percent)) +	
+  geom_alluvium(aes(fill = bigscape_type), width = 1/2, color = NA) +
+  geom_stratum(aes(fill = after_stat(stratum)), width = 1/2, color = NA) +
+  scale_fill_manual(values = c("#1F77B4FF","#FF7F0EFF","#2CA02CFF","#D62728FF", "#9467BDFF", "#8C564BFF","#E377C2FF", "#7F7F7FFF",
+                               "#7FC97F","#ABB6BA","#D7B5B4","#FDC687","#FEF295","#9BB5A4", "#5C56A6", "#DD0C83", "#D23740","#CAD4A1", "#D5C8D5", "#7BD6C8", "#83A0DA", "#A45E2E", "#666666"))+
+  scale_x_discrete(expand = c(0.1, 0.1)) +
+  theme_minimal() +
+  facet_wrap(~ sample, ncol=8) +
+  labs(x = "", y = "Percentage", title = "",fill="node")+
+  theme(strip.text = element_text(size = 14, face = "bold"),
+        legend.title = element_text(size = 14, face = "bold"),
+        legend.text = element_text(size = 14), 
+        axis.text.x = element_blank(),    
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_text(size = 14), 
+        axis.title.y = element_text(size = 15))+ 
+  guides(fill = guide_legend(ncol = 1))
+pdf("Fig2A_sankey_by_sample.pdf", width = 20, height = 11)
+print(p)
+dev.off()
+
+
+#### Fig2B
+library(readxl)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(ggsci)
+source("../Function/Reformat_data.R")
+animals=c("marine","soil","human-oral","human-vaginal","human-skin","human-gut",
+          "mouse-gut","pig-gut","Cowrumen","sheep-rumen","horse","panda","ChickenGut",
+          "HoneybeeGut","zebrafish-fecal","non-model-fish-gut")
+bgc.summary.RiPPs <- read_excel("../suppTables/TableS4_BGCtype_RiPPs_number.xlsx")
+df.fig.RiPPs<-create_dffig_from_summary(bgc.summary.RiPPs,cutoff = 10)
+df.fig.RiPPs$sample<-factor(df.fig.RiPPs$sample,levels = animals)
+pdf(file="Fig2B_BGC_subclass_RiPPs_percentage.pdf", width = 7, height = 4)
+p<- ggplot(data=df.fig.RiPPs, aes(x=sample, y=num, fill=new_subclass)) + 
+  geom_bar(stat="identity",width = 0.8,position=position_fill(reverse = FALSE),colour = NA) + 
+  scale_fill_manual(values = c("RiPP-like"="#1F77B4FF","RRE-containing"="#FF7F0EFF","ranthipeptide"="#2CA02CFF",
+                               "cyclic-lactone-autoinducer"= "#D62728FF","redox-cofactor"="#9467BDFF","thiopeptide"="#8C564BFF","other" = "#7F7F7FFF"),
+                    guide = "legend", aesthetics = "fill") +
+  cowplot::theme_cowplot() +
+  theme(axis.title.x = element_blank(),axis.text.x = element_text(angle = 45,size = 10,hjust = 0.95,vjust = 0.95))+
+  labs(y='Relative abundance (%)',fill = "RiPPs subclass") +
+  scale_y_continuous(labels = function(x) x * 100)
+print(p)
+dev.off()
+
+
+#### Fig2C
+library(readxl)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(ggsci)
+source("../Function/Reformat_data.R")
+animals=c("marine","soil","human-oral","human-vaginal","human-skin","human-gut",
+          "mouse-gut","pig-gut","Cowrumen","sheep-rumen","horse","panda","ChickenGut",
+          "HoneybeeGut","zebrafish-fecal","non-model-fish-gut")
+bgc.summary.NRPS <- read_excel("../suppTables/TableS5_BGCtype_NRPS_number.xlsx")
+df.fig.NRPS<-create_dffig_from_summary(bgc.summary.NRPS,cutoff = 10)
+df.fig.NRPS$sample<-factor(df.fig.NRPS$sample,levels = animals)
+pdf(file="Fig2C_BGC_subclass_NRPS_percentage.pdf", width = 7, height = 4)
+p<- ggplot(data=df.fig.NRPS, aes(x=sample, y=num, fill=new_subclass)) + 
+  geom_bar(stat="identity",width = 0.8,position=position_fill(reverse = FALSE),colour = NA) + 
+  scale_fill_manual(values = c("NRPS"="#1F77B4FF","NRPS-like"="#FF7F0EFF","NRP-metallophore+NRPS"="#2CA02CFF","NAPAA"= "#D62728FF",
+                               "NRP-metallophore"="#9467BDFF","other" = "#7F7F7FFF"), guide = "legend", aesthetics = "fill") +
+  cowplot::theme_cowplot() +
+  theme(axis.title.x = element_blank(),axis.text.x = element_text(angle = 45,size = 10,hjust = 0.95,vjust = 0.95))+
+  labs(y='Relative abundance (%)',fill = "NRPS subclass") +
+  scale_y_continuous(labels = function(x) x * 100)
+print(p)
+dev.off()
+
+
+#### Fig2D
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(ggsankey)
+library(randomcoloR)
+set.seed(1)
+source("../Function/Reformat_data.R")
+
+df.sample<-read_excel("Fig2D.marine.terpene.taxonomy.xlsx",sheet = 1)
+df.s <- df.sample %>%
+  filter_subtaxo("Phylum", "new_Phylum", 5) %>%
+  filter_subtaxo("Class", "new_Class", 5) %>%
+  filter_subtaxo("Order", "new_Order", 5) %>%
+  filter_subtaxo("Family", "new_Family", 2) %>%
+  filter_subtaxo("Genus", "new_Genus", 1) %>%
+  filter_subtaxo("Species", "new_Species", 0.3)
+
+df.s.tp <- df.s %>% 
+  select(bigscape_type, sample, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+df_sorted <- df.s.tp %>% 
+  arrange(bigscape_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+order_levels <- unique(c(
+  as.character(unique(df_sorted$bigscape_type)),
+  "other",
+  as.character(unique(df_sorted$new_Phylum)),
+  as.character(unique(df_sorted$new_Class)),
+  as.character(unique(df_sorted$new_Order)),
+  as.character(unique(df_sorted$new_Family)),
+  as.character(unique(df_sorted$new_Genus)),
+  as.character(unique(df_sorted$new_Species))
+))
+
+df.sankey <- df.s %>%
+  make_long(bigscape_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+df.sankey$node <- factor(df.sankey$node, levels = order_levels)
+
+col_num <- length(unique(df.sankey$node)) - 2
+dis_colors <- distinctColorPalette(col_num)
+my_colors <- c("#2CA02CFF", "#7F7F7FFF", dis_colors)
+
+p <- ggplot(df.sankey, aes(
+  x = x, next_x = next_x,
+  node = node, next_node = next_node,
+  fill = factor(node)
+)) +
+  geom_sankey(
+    flow.alpha = 0.4,
+    node.color = "transparent",
+    flow.color = "transparent",
+    width = 0.2
+  )  +
+  scale_fill_manual(values = my_colors) +
+  theme_sankey(base_size = 8) +
+  ggtitle("marine") +
+  scale_x_discrete(labels = c(
+    "bigscape_type" = "BGC Type",
+    "new_Phylum" = "Phylum",
+    "new_Class" = "Class",
+    "new_Order" = "Order",
+    "new_Family" = "Family",
+    "new_Genus" = "Genus",
+    "new_Species" = "Species"
+  )) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(5, 10, 5, 5)
+  ) +
+  coord_cartesian(clip = "off")+
+  geom_sankey_text(
+    aes(label = node),
+    size = 1.8,
+    color = "black",vjust = 1.8)
+pdf("Fig2D_Sankey_marine_Terpene_taxonomy.pdf", width = 5, height = 4)
+print(p)
+dev.off()
+
+
+#### Fig2E
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(ggsankey)
+library(randomcoloR)
+set.seed(1)
+source("../Function/Reformat_data.R")
+df.sample<-read_excel("Fig2E.human-gut.terpene.taxonomy.xlsx",sheet = 1)
+
+df.s <- df.sample %>%
+  filter_subtaxo("Phylum", "new_Phylum", 5) %>%
+  filter_subtaxo("Class", "new_Class", 5) %>%
+  filter_subtaxo("Order", "new_Order", 5) %>%
+  filter_subtaxo("Family", "new_Family", 5) %>%
+  filter_subtaxo("Genus", "new_Genus", 2) %>%
+  filter_subtaxo("Species", "new_Species", 1)
+
+df.s.tp <- df.s %>% 
+  select(bigscape_type, sample, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+df_sorted <- df.s.tp %>% 
+  arrange(bigscape_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+order_levels <- unique(c(
+  as.character(unique(df_sorted$bigscape_type)),
+  "other",
+  as.character(unique(df_sorted$new_Phylum)),
+  as.character(unique(df_sorted$new_Class)),
+  as.character(unique(df_sorted$new_Order)),
+  as.character(unique(df_sorted$new_Family)),
+  as.character(unique(df_sorted$new_Genus)),
+  as.character(unique(df_sorted$new_Species))
+))
+
+df.sankey <- df.s %>%
+  make_long(bigscape_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+df.sankey$node <- factor(df.sankey$node, levels = order_levels)
+
+col_num <- length(unique(df.sankey$node)) - 2
+dis_colors <- distinctColorPalette(col_num)
+my_colors <- c("#2CA02CFF", "#7F7F7FFF", dis_colors)
+
+p <- ggplot(df.sankey, aes(
+  x = x, next_x = next_x,
+  node = node, next_node = next_node,
+  fill = factor(node)
+)) +
+  geom_sankey(
+    flow.alpha = 0.4,
+    node.color = "transparent",
+    flow.color = "transparent",
+    width = 0.2
+  )  +
+  scale_fill_manual(values = my_colors) +
+  theme_sankey(base_size = 8) +
+  ggtitle("marine") +
+  scale_x_discrete(labels = c(
+    "bigscape_type" = "BGC Type",
+    "new_Phylum" = "Phylum",
+    "new_Class" = "Class",
+    "new_Order" = "Order",
+    "new_Family" = "Family",
+    "new_Genus" = "Genus",
+    "new_Species" = "Species"
+  )) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(5, 10, 5, 5)
+  ) +
+  coord_cartesian(clip = "off")+
+  geom_sankey_text(
+    aes(label = node),
+    size = 1.8,
+    color = "black",vjust = 1.8)
+
+pdf("Fig2E_Sankey_humangut_Terpene_taxonomy.pdf", width = 5, height = 4)
+print(p)
+dev.off()
+
