@@ -1,4 +1,4 @@
-## Fig1A
+### Fig1A
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -56,7 +56,7 @@ ggplot(data_long, aes(x = count, y = source, fill = type)) +
 dev.off()
 
 
-## Fig1B
+### Fig1B
 library("ggplot2")
 library("reshape2")
 library("RColorBrewer")
@@ -75,7 +75,7 @@ coord_flip()
 dev.off()
 
 
-## Fig1C
+### Fig1C
 library(readxl)
 library(dplyr)
 library(reshape2)
@@ -102,3 +102,196 @@ pp = ggplot(data=df.bgc, aes(x=sample, y=num, fill=group)) + geom_bar(stat="iden
 print(pp)
 dev.off()
 
+
+### Fig1D
+Rscript phylogenies.R --name "human-gut" \
+    --file1 "human-gut_metadata.tsv" \
+    --file2 "human-gut.BGCType.xlsx" \
+    --file3 "bac120_iqtree.nwk" \
+    --output ./
+
+## phylogenies.R
+# (1) 读取数据----------------------------
+# 1-1) 读取MAG数据的来源，地址位置信息
+df.tp<-read.delim2(opts$file1)
+df.tp<-df.tp %>% select(Genome,Species_rep,Lineage,Country,Continent)
+df.tp$Species_rep <- str_remove(df.tp$Species_rep, "\\..*$")
+df.tp$Phylum <- word(df.tp$Lineage, 2, sep = fixed(";"))
+df.tp$Phylum <- gsub("p__","",df.tp$Phylum)
+df.tp <- df.tp %>% mutate(Phylum = if_else(Phylum == "", "unknown", Phylum))
+df.tp$Class <- word(df.tp$Lineage, 3, sep = fixed(";"))
+df.tp$Order <- word(df.tp$Lineage, 4, sep = fixed(";"))
+df.tp$Family <- word(df.tp$Lineage, 5, sep = fixed(";"))
+df.tp$Genus <- word(df.tp$Lineage, 6, sep = fixed(";"))
+df.tp$Species <- word(df.tp$Lineage, 7, sep = fixed(";"))
+
+#获取外层数据
+df.meta<-df.tp %>% select(Species_rep,Phylum,Continent) %>% unique() 
+df.meta <- df.meta %>% mutate(Continent = replace_na(Continent, "not provided"))
+df.sum_MAG<-df.tp %>%group_by(Species_rep) %>% summarise(n_MAG=n(), .groups = "drop")
+df_cleaned <- df.meta %>%
+  mutate(priority = if_else(Continent == "not provided", 2, 1)) %>%
+  arrange(Species_rep, priority) %>%
+  group_by(Species_rep) %>%
+  slice(1) %>%
+  select(-priority) %>%
+  ungroup()
+df_cleaned<-merge(df_cleaned,df.sum_MAG,by="Species_rep",all=TRUE)
+
+# 1-2) 读取MAG数据对应BGC的类型，数量
+df.BGC.tp<-read_xlsx(opts$file2, sheet = 1) 
+colnames(df.BGC.tp)[1]<-"Genome"
+df.trans<-df.tp %>% select(Genome,Species_rep)
+df.BGC.tp2<-merge(df.BGC.tp,df.trans) 
+df.BGC.tp2<-df.BGC.tp2[,-1]
+df.BGC.tp2<-df.BGC.tp2 %>% group_by(Species_rep) %>% 
+  summarise(across(where(is.numeric), sum, na.rm = TRUE), .groups = "drop")
+
+df.BGC <- df.BGC.tp2 %>% 
+  mutate(across(-c(1, 2), ~ .x / Region_Num))
+
+# 1-3) 合并数据
+df.merge<-merge(df_cleaned,df.BGC,by="Species_rep",all=TRUE)
+df.merge<-df.merge %>% mutate(BGC_count=Region_Num/n_MAG)
+
+# (2) 基础圆形树----------------------------
+tree <- read.newick(opts$file3)
+
+# Prepare long-format BGC composition for stacked barplot
+BGC_type<-c("PKSI","PKSother","NRPS","RiPPs","Saccharides","Terpene","PKS-NRP_Hybrids","Others")
+bgc_long <- df.merge %>%
+  select(Species_rep, BGC_type) %>%
+  pivot_longer(
+    cols = BGC_type,
+    names_to = "BGC_type",
+    values_to = "proportion"
+  )
+
+#准备长格式--地理位置
+#---针对marine量身定制的代码--{
+df.tp$Continent <- gsub("NA","not provided",df.tp$Continent)
+df.tp2 <- df.tp %>%
+  mutate(
+    Continent = case_when(
+      Continent != "not provided" ~ Continent,
+      str_detect(Country, "Ocean") ~ Country,
+      TRUE ~ Continent
+    )
+  )
+df.tp2$Continent<-gsub("Pacific Ocean:South China Sea","Pacific Ocean",df.tp2$Continent)
+##}
+
+#整理其它地址位置的信息
+df.loc<-df.tp2 %>% select(Species_rep,Continent) %>% group_by(Species_rep,Continent) %>% summarise(n_con=n(), .groups = "drop")
+df.loc.short<-pivot_wider(df.loc,names_from = Continent,values_from = n_con,values_fill = 0)
+row_sums <- rowSums(df.loc.short[, -1], na.rm = TRUE) # na.rm = TRUE 用于处理缺失值
+df.loc.short[, -1] <- apply(df.loc.short[, -1], MARGIN = 2, function(x) x / row_sums)
+df.loc.long <- df.loc.short %>%
+  pivot_longer(
+    cols = colnames(df.loc.short)[-1],
+    names_to = "Continent",
+    values_to = "proportion"
+  )
+#将NA替换为"not provided"
+df.loc.long.sum <- df.loc.long %>%
+  group_by(Species_rep, Continent) %>%
+  summarise(proportion = sum(proportion, na.rm = TRUE), .groups = "drop")
+
+#设置BGCtype的factor
+bgc_long$BGC_type<-factor(bgc_long$BGC_type,levels = c("RiPPs","NRPS","Terpene","PKSother","PKSI","PKS-NRP_Hybrids","Saccharides","Others"))
+
+#设置Continent的factor，并按照出现的频率划分
+df.continent.sum <- df.loc.long.sum %>%
+  group_by(Continent) %>%
+  summarise(total_proportion = sum(proportion, na.rm = TRUE)) %>%
+  arrange(desc(total_proportion))
+
+df.loc.long.sum$Continent<-factor(df.loc.long.sum$Continent,levels =df.continent.sum$Continent )
+
+#设置地理位置颜色
+continent_color<-c(
+  "Asia" ="#e6194B",
+  "Europe"="#3cb44b",
+  "North America"="#ffe119",
+  "not provided"="#4363d8",
+  "Arctic Ocean"="#f58231",
+  "Oceania"="#911eb4",
+  "Africa"="#42d4f4",
+  "South America"="#f032e6",
+  "Pacific Ocean"="#bfef45",
+  "Indian Ocean"="#fabed4",
+  "Arctic Ocean"="#469990",
+  "Antarctica"="#dcbeff",
+  "South America"="#9A6324")
+
+my_colors<-continent_color[ names(continent_color) %in% unique(df.loc.long.sum$Continent) ]
+
+# --- Base tree ---
+p <- ggtree(tree, layout = "circular", size = 0.5, color = "#333333") +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(face = "bold", size = 13),
+    legend.text = element_text(size = 11),
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5),
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+
+# --- 1st Layer: Phylum (categorical) ---
+num_phyla <- length(unique(df.merge$Phylum))
+phyla_color_palette <- colorRampPalette(brewer.pal(8, 'Accent'))(num_phyla)
+p <- p +
+  geom_fruit(
+    data = df.merge,
+    geom = geom_tile,
+    mapping = aes(y = Species_rep, fill = Phylum),
+    width = 0.1,
+    offset = 0.02,
+    size = 0.4
+  ) +
+  scale_fill_manual(name = "Phylum", values = phyla_color_palette) +  # ggsci NPG palette
+  new_scale_fill()
+
+# --- 2nd Layer: Continent (categorical) ---
+p <- p +
+  geom_fruit(
+    data = df.loc.long.sum,
+    geom = geom_bar,
+    mapping = aes(y = Species_rep, x = proportion, fill = Continent),
+    stat = "identity",
+    orientation = "y",
+    width = 0.3,
+    offset = 0.1
+  ) +
+  scale_fill_manual(name = "Continent",values = c(my_colors))+
+  new_scale_fill()
+
+# --- 3rd Layer: BGC Composition (stacked bar, categorical, sum=1 per MAG) ---
+p <- p +
+  geom_fruit(
+    data = bgc_long,
+    geom = geom_bar,
+    mapping = aes(y = Species_rep, x = proportion, fill = BGC_type),
+    stat = "identity",
+    orientation = "y",
+    width = 0.5,
+    offset = 0.1
+  ) + 
+  scale_fill_manual(name ="BGC type",
+                    values = c("RiPPs"="#1F77B4FF","NRPS"="#FF7F0EFF","Terpene"="#2CA02CFF","PKSother"= "#D62728FF","PKSI"= "#9467BDFF","PKS-NRP_Hybrids"= "#8C564BFF",
+                               "Saccharides"= "#E377C2FF","Others" = "#7F7F7FFF"), guide = "legend", aesthetics = "fill") +  
+  new_scale_fill()
+
+# --- 4th Layer: BGC Count (heatmap) ---
+p <- p +
+  geom_fruit(
+    data = df.merge,
+    geom = geom_tile,
+    mapping = aes(y = Species_rep, x = 1, fill = BGC_count),
+    width = 0.1,
+    offset = 0.001,pwidth = 0.1
+  ) +scale_fill_viridis() +labs(fill = "BGC Count")
+
+pdf(paste0(opts$output,opts$name,".phylogenies_tree.BGC.pdf"), width = 15, height = 15)
+print(p)
+dev.off()
