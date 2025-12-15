@@ -1,3 +1,61 @@
+## Fig1A
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(scales)
+data <- data.frame(
+  source = c("marine", "soil", "Human-oral","Human-vaginal", "Human-skin", "Human-gut", 
+             "Mouse-gut", "Pig-gut",  "Cow-rumen","Sheep-rumen", "Horse-gut", "Panda-gut",
+             "Chicken-gut",  "Honeybee-gut", "zebrafish-fecal", "non-model-fish-gut"),
+  genomes_count = c(50866, 20908,1225,618, 4611,289232, 
+                    112951,3972, 5578,2904,4142, 2684, 
+                    13386, 627, 101, 254),
+  species_count = c(13223, 19472, 452,280,579,4744,
+                    2847,1376,2729,2172,744,444,
+                    1322,154, 79, 178))
+
+data <- data %>%
+  mutate(source = factor(source, levels = rev(source)))
+
+data_long <- data %>%
+  pivot_longer(cols = c(genomes_count, species_count), 
+               names_to = "type", 
+               values_to = "count")
+
+pdf("Fig1A_barplot_count.pdf", width = 5, height = 8)
+ggplot(data_long, aes(x = count, y = source, fill = type)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  geom_text(aes(label = comma(count), group = type), 
+            position = position_dodge(width = 0.7),
+            hjust = -0.1, size = 3, color = "black") +
+  scale_x_log10(
+    breaks = c(10, 100, 1000, 10000, 100000, 1000000),
+    labels = scales::math_format(10^.x, format = log10),
+    expand = expansion(mult = c(0, 0.2))
+  ) +
+  scale_fill_manual(
+    values = c("genomes_count" = "#00a4bd", "species_count" = "#7dc479"),
+    labels = c("Genomes", "Species")
+  ) +
+  labs(
+    x = "Count (Log Scale)",
+    y = NULL,
+    fill = "Data Type"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+    axis.title.y = element_blank(), 
+    axis.text.y = element_text(size = 11, hjust = 0.5),
+    axis.ticks.x = element_line(color = "black"), 
+    axis.ticks.length = unit(2, "pt"), 
+    axis.line.x = element_line(color = "black"),
+    axis.line.y = element_line(color = "black"),
+    legend.position = "top"
+  )
+dev.off()
+
+
 ## Fig1B
 library("ggplot2")
 library("reshape2")
