@@ -1,8 +1,256 @@
-#### Fig4A
+#### Fig4A ####
+library(ggplot2)
+library(hexbin)
+library(viridis)
+library(dplyr)
+
+# 1)
+df <- read.delim("human-gut.thioamitides_archaeal-RiPP.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+# 转置数据框
+#df_transposed <- t(df)
+#df_numeric <- as.matrix(df_transposed)
+#df_numeric <- apply(df_numeric, 2, as.numeric) 
+# 对数据进行 log(x+1) 转换
+df_log <- log1p(df)
+
+correlation <- cor(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearman")
+cor_test <- cor.test(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+# 创建自定义颜色梯度（深黄到深蓝）
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("human-gut.thioamitides_archaeal-RiPP.cor.pdf",width=4.0,height=2.8)
+p1 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
+  geom_hex(bins = 30) +  # 对应 Python 的 gridsize
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  # 对数转换颜色尺度
+    name = "Number of Samples",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  # 10的指数断点
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  # 10^x格式
+    guide = guide_colorbar(
+      title.theme = element_text(size =11)  # 设置标题字体大小
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "Thioamitides Abundance (log transformed)",
+    y = "Archaeal-RiPP Abundance (log transformed)",
+    title = paste("Thioamitides vs Archaeal-RiPP"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 0.7, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  # 设置字体
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  # 去掉网格线
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+
+print(p1)
+dev.off()
+
+# 2)
+df <- read.delim("Cowrumen.thioamitides_archaeal-RiPP.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+# 转置数据框
+#df_transposed <- t(df)
+#df_numeric <- as.matrix(df_transposed)
+#df_numeric <- apply(df_numeric, 2, as.numeric) 
+# 对数据进行 log(x+1) 转换
+df_log <- log1p(df)
+
+correlation <- cor(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearman")
+cor_test <- cor.test(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+pdf("Cowrumen.thioamitides_archaeal-RiPP.cor.pdf",width=4.0,height=2.8)
+p2 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
+  geom_hex(bins = 30) +  # 对应 Python 的 gridsize
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  # 对数转换颜色尺度
+    name = "Number of Samples",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  # 10的指数断点
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  # 10^x格式
+    guide = guide_colorbar(
+      title.theme = element_text(size =11)  # 设置标题字体大小
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "Thioamitides Abundance (log transformed)",
+    y = "Archaeal-RiPP Abundance (log transformed)",
+    title = paste("Thioamitides vs Archaeal-RiPP"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 0.7, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  # 设置字体
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  # 去掉网格线
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+
+print(p2)
+dev.off()
+
+# 3)
+df <- read.delim("sheep-rumen.thioamitides_archaeal-RiPP.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+# 转置数据框
+#df_transposed <- t(df)
+#df_numeric <- as.matrix(df_transposed)
+#df_numeric <- apply(df_numeric, 2, as.numeric) 
+# 对数据进行 log(x+1) 转换
+df_log <- log1p(df)
+
+correlation <- cor(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearman")
+cor_test <- cor.test(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+# 创建自定义颜色梯度（深黄到深蓝）
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("sheep-rumen.thioamitides_archaeal-RiPP.cor.pdf",width=4.0,height=2.8)
+p3 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
+  geom_hex(bins = 30) +  # 对应 Python 的 gridsize
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  # 对数转换颜色尺度
+    name = "Number of Samples",
+    breaks = 10^(0:4),
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  # 10^x格式
+    guide = guide_colorbar(
+      title.theme = element_text(size =11)  # 设置标题字体大小
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "Thioamitides Abundance (log transformed)",
+    y = "Archaeal-RiPP Abundance (log transformed)",
+    title = paste("Thioamitides vs Archaeal-RiPP"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 1.05, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  # 设置字体
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  # 去掉网格线
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+
+print(p3)
+dev.off()
+
+# 4)
+df <- read.delim("pig-gut.thioamitides_archaeal-RiPP.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+# 转置数据框
+#df_transposed <- t(df)
+#df_numeric <- as.matrix(df_transposed)
+#df_numeric <- apply(df_numeric, 2, as.numeric) 
+# 对数据进行 log(x+1) 转换
+df_log <- log1p(df)
+
+correlation <- cor(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearman")
+cor_test <- cor.test(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+# 创建自定义颜色梯度（深黄到深蓝）
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("pig-gut.thioamitides_archaeal-RiPP.cor.pdf",width=4.0,height=2.8)
+p4 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
+  geom_hex(bins = 30) +  # 对应 Python 的 gridsize
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  # 对数转换颜色尺度
+    name = "Number of Samples",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  # 10的指数断点
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  # 10^x格式
+    guide = guide_colorbar(
+      title.theme = element_text(size =11)  # 设置标题字体大小
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "Thioamitides Abundance (log transformed)",
+    y = "Archaeal-RiPP Abundance (log transformed)",
+    title = paste("Thioamitides vs Archaeal-RiPP"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 0.7, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  # 设置字体
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  # 去掉网格线
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+
+print(p4)
+dev.off()
 
 
-
-#### Fig4B
+#### Fig4B ####
 library(tidyverse)  
 library(ggalluvial) 
 library(patchwork)   
@@ -105,3 +353,67 @@ pdf("Fig4B_alluvium_archaealRiPP_thioamitides_taxonomy.pdf", width = 12, height 
 p_main_simple + plot_spacer() + legend_panel + 
   plot_layout(widths = c(2, -0.5, 1))  
 dev.off()
+
+
+#### Fig4C ####
+df <- read.delim("human-gut.phenazine_NAGGN.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+# 转置数据框
+#df_transposed <- t(df)
+#df_numeric <- as.matrix(df_transposed)
+#df_numeric <- apply(df_numeric, 2, as.numeric) 
+# 对数据进行 log(x+1) 转换
+df_log <- log1p(df)
+
+correlation <- cor(df_log$phenazine, df_log$NAGGN, method = "spearman")
+cor_test <- cor.test(df_log$phenazine, df_log$NAGGN, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+# 创建自定义颜色梯度（深黄到深蓝）
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("human-gut.phenazine_NAGGN.cor.pdf",width=3.3,height=2.8)
+p1 <- ggplot(df_log, aes(x = phenazine, y = NAGGN)) +
+  geom_hex(bins = 30) +  # 对应 Python 的 gridsize
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  # 对数转换颜色尺度
+    name = "Number",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  # 10的指数断点
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  # 10^x格式
+    guide = guide_colorbar(
+      title.theme = element_text(size =11)  # 设置标题字体大小
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "Phenazine Abundance",
+    y = "NAGGN Abundance",
+    title = paste("Phenazine vs NAGGN"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 0.7, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  # 设置字体
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  # 去掉网格线
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+
+print(p1)
+dev.off()
+
