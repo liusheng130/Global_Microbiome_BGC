@@ -1,4 +1,4 @@
-### Fig1A
+#### Fig1A
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -56,7 +56,7 @@ ggplot(data_long, aes(x = count, y = source, fill = type)) +
 dev.off()
 
 
-### Fig1B
+#### Fig1B
 library("ggplot2")
 library("reshape2")
 library("RColorBrewer")
@@ -75,7 +75,7 @@ coord_flip()
 dev.off()
 
 
-### Fig1C
+#### Fig1C
 library(readxl)
 library(dplyr)
 library(reshape2)
@@ -103,7 +103,7 @@ print(pp)
 dev.off()
 
 
-### Fig1D
+#### Fig1D
 Rscript phylogenies.R --name "human-gut" \
     --file1 "human-gut_metadata.tsv" \
     --file2 "human-gut.BGCType.xlsx" \
