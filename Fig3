@@ -1,0 +1,452 @@
+#### Fig3A
+library(UpSetR)
+library("ggplot2")
+load("subclass.Rdata")
+
+pdf("Fig3A_upset_subclass_Separate.pdf",width=7,height = 4)
+upset(
+  fromList(subclass), 
+  order.by = "freq",
+  nsets = length(subclass),
+  set_size.show = TRUE,
+  set_size.numbers_size=6,
+  mb.ratio = c(0.5, 0.5), text.scale=c(1,1,1,1,1,1),nintersects = NA,
+  point.size = 1.3,                 
+  line.size = 0.4, 
+  mainbar.y.label = "Intersection Size",
+  sets.x.label = "Number of BGC Types" 
+) 
+dev.off()
+
+
+#### Fig3B
+library(pheatmap) 
+library(readxl)
+animals=c("marine","soil","human-oral","human-vaginal","human-skin","human-gut",
+          "mouse-gut","pig-gut","Cowrumen","sheep-rumen","horse","panda","ChickenGut",
+          "HoneybeeGut","zebrafish-fecal","non-model-fish-gut")
+load("Fig3A.subclass.Rdata")
+df.BGCtype<-read_excel("../suppTables/TableS7_16category_total_bgc_mergy_nor.xlsx",sheet = 1)
+df.BGCtype<-as.data.frame(df.BGCtype)
+rownames(df.BGCtype)<-df.BGCtype$BGCtype
+df.BGCtype<-df.BGCtype[,animals]
+df.BGCtype <- df.BGCtype[rownames(df.BGCtype) != "other", ]
+
+common_strings <- Reduce(intersect, subclass)
+df.BGCtype.com<-df.BGCtype[common_strings,]
+
+pdf("Fig3B_BGC_common_pheatmap.pdf",width = 5.5,height = 4.5)
+pheatmap(df.BGCtype.com,
+         scale = 'row',color = colorRampPalette(c("navy", "white", "firebrick3"))(100),
+         cluster_cols = F, cluster_rows=T,
+         show_colnames= T,
+         fontsize_row = 8,fontsize_col = 10,
+         angle_col = 45,
+         annotation_legend=T)
+dev.off()
+
+
+#### Fig3C
+library(VennDiagram)
+c1 <- 67 
+c2 <- 60 
+c3 <- 41  
+c4 <- 36 
+c12 <- 56  
+c13 <- 41  
+c14 <- 36 
+c23 <- 41  
+c24 <- 36  
+c34 <- 32 
+c123 <- 41  
+c124 <- 36  
+c134 <- 32  
+c234 <- 32  
+c1234 <- 32  
+
+argv <- commandArgs(T)
+pdf("human_venn.pdf",width=4,height=4)
+cor1<-"#BEBADA" 
+cor2<-"#FB8072" 
+cor3<-"#80B1D3"
+cor4<-"#FDB462"
+venn.plot <- draw.quad.venn(
+  area1 = c1, area2 = c2, area3 = c3, area4 = c4,
+  n12 = c12, n13 = c13, n14 = c14, n23 = c23, n24 = c24, n34 = c34,
+  n123 = c123, n124 = c124, n134 = c134, n234 = c234,
+  n1234 = c1234,
+  category = c("human-gut", "human-skin", "human-oral", "human-vaginal"),
+# fill = c(cor1, cor2, cor3, cor4),
+  fill = c("#FDB462", "#80B1D3", "#BEBADA","#FB8072"),
+  alpha = 0.8,
+  col = "white", 
+  stroke_alpha = 0.5,   
+# lty = "dashed",
+  cex = 2,
+  cat.cex = 1.5,
+  cat.col = "black"
+)
+grid.draw(venn.plot)
+dev.off()
+
+
+#### Fig3D
+library(UpSetR)
+load("mam_subclass.Rdata")
+pdf("Fig3D_upset_subclass_mammal.pdf",width=8,height = 6)
+upset(
+  fromList(mam_subclass), 
+  order.by = "freq",
+  nsets = length(mam_subclass),
+  set_size.show = TRUE,
+  set_size.numbers_size=6,
+  line.size = 0.5,
+  mb.ratio = c(0.6, 0.4), text.scale=c(1,1,1,1,1,1), nintersects = NA,
+  mainbar.y.label = "Intersection Size", 
+  sets.x.label = "Number of BGC Types" 
+)
+dev.off()
+
+
+#### Fig3E
+argv <- commandArgs(T)
+library("ggplot2")
+library("reshape2")
+library("RColorBrewer")
+df<-read.table("TableS8_BGC_70per.percentage",header=T,check.names=F)
+df<-melt(df)
+colnames(df)<-c("sample","subclass","num")
+sample_order <- c("marine","soil","human-oral","human-vaginal","human-skin","human-gut","mouse-gut","pig-gut","Cowrumen","sheep-rumen","horse","panda","ChickenGut","HoneybeeGut","zebrafish-fecal","non-model-fish-gut")
+df$sample <- factor(df$sample, levels = sample_order)
+pdf("Fig3E_BGC_70percentage.pdf",width=9,height=4.8)
+ggplot(data=df, aes(x=subclass, y=num, fill=sample)) + geom_bar(stat="identity",width = 0.8) + 
+  labs(x='',y='Percentage (%)',fill = "Category") +scale_fill_manual(values = c(brewer.pal(12, "Set3"),brewer.pal(8, "Set2"),brewer.pal(8, "Dark2"))) +
+  theme(axis.title.x = element_blank(),axis.text = element_text(size = 8),axis.title.y =element_text(size = 10), legend.text = element_text(size = 8),
+        panel.grid.minor = element_blank()) + cowplot::theme_cowplot() + theme(axis.text.x = element_text(angle = 45,size =10,hjust = 0.95,vjust = 0.95))
+dev.off()
+
+
+
+#### Fig3F
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(ggsankey)
+library(randomcoloR)
+set.seed(1)
+source("../../Function/Reformat_data.R")
+df.PBDE<-read_excel("Fig3F.marine.PBDE.taxonomy.xlsx",sheet = 1)
+samples <- unique(df.PBDE$sample)
+
+df.s <- df.PBDE %>%
+  filter_subtaxo("Phylum", "new_Phylum", 5) %>%
+  filter_subtaxo("Class", "new_Class", 5) %>%
+  filter_subtaxo("Order", "new_Order", 5) %>%
+  filter_subtaxo("Family", "new_Family", 5) %>%
+  filter_subtaxo("Genus", "new_Genus", 2) %>%
+  filter_subtaxo("Species", "new_Species", 1)
+
+df.sankey <- df.s %>%
+  make_long(bgc_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+col_num <- length(unique(df.sankey$node))
+my_colors <- distinctColorPalette(col_num)
+
+p <- ggplot(df.sankey, aes(
+  x = x, next_x = next_x,
+  node = node, next_node = next_node,
+  fill = factor(node)
+)) +
+  geom_sankey(
+    flow.alpha = 0.4,
+    node.color = "transparent",
+    flow.color = "transparent",
+    width = 0.2
+  ) +
+  scale_fill_manual(values = my_colors) +
+  theme_sankey(base_size = 8) +
+  ggtitle(samples) +
+  scale_x_discrete(labels = c(
+    "bgc_type" = "BGC Type",
+    "new_Phylum" = "Phylum",
+    "new_Class" = "Class",
+    "new_Order" = "Order",
+    "new_Family" = "Family",
+    "new_Genus" = "Genus",
+    "new_Species" = "Species"
+  )) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(5, 20, 5, 5)
+  ) +
+  coord_cartesian(clip = "off")+
+  geom_sankey_text(
+    aes(label = node),
+    size = 1.8,
+    color = "black",vjust = 1.8)
+
+pdf("Fig3F_Sankey_marine_PBDE_taxonomy.pdf", width = 5, height = 3)
+print(p)
+dev.off()
+
+
+#### Fig3G
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(ggsankey)
+library(randomcoloR)
+set.seed(1)
+source("../Function/Reformat_data.R")
+
+df.PUFA<-read_excel("Fig3G.marine.PUFA.taxonomy.xlsx",sheet = 1)
+samples <- unique(df.PUFA$sample)
+
+df.s <- df.PUFA %>%
+  filter_subtaxo("Phylum", "new_Phylum", 5) %>%
+  filter_subtaxo("Class", "new_Class", 5) %>%
+  filter_subtaxo("Order", "new_Order", 5) %>%
+  filter_subtaxo("Family", "new_Family", 5) %>%
+  filter_subtaxo("Genus", "new_Genus", 2) %>%
+  filter_subtaxo("Species", "new_Species", 1)
+
+df_sorted <- df.s %>% 
+  arrange(bgc_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+order_levels <- unique(c(
+  as.character(unique(df_sorted$bgc_type)),
+  "other","Gammaproteobacteria","Enterobacterales_A",
+  as.character(unique(df_sorted$new_Phylum)),
+  as.character(unique(df_sorted$new_Class)),
+  as.character(unique(df_sorted$new_Order)),
+  as.character(unique(df_sorted$new_Family)),
+  as.character(unique(df_sorted$new_Genus)),
+  as.character(unique(df_sorted$new_Species))
+))
+
+df.sankey <- df.s %>%
+  make_long(bgc_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+df.sankey$node <- factor(df.sankey$node, levels = order_levels)
+
+col_num <- length(unique(df.sankey$node))
+my_colors <- distinctColorPalette(col_num)
+
+p <- ggplot(df.sankey, aes(
+  x = x, next_x = next_x,
+  node = node, next_node = next_node,
+  fill = factor(node)
+)) +
+  geom_sankey(
+    flow.alpha = 0.4,
+    node.color = "transparent",
+    flow.color = "transparent",
+    width = 0.2
+  ) +
+  scale_fill_manual(values = my_colors) +
+  theme_sankey(base_size = 8) +
+  ggtitle(samples) +
+  scale_x_discrete(labels = c(
+    "bgc_type" = "BGC Type",
+    "new_Phylum" = "Phylum",
+    "new_Class" = "Class",
+    "new_Order" = "Order",
+    "new_Family" = "Family",
+    "new_Genus" = "Genus",
+    "new_Species" = "Species"
+  )) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(5, 10, 5, 5)
+  ) +
+  coord_cartesian(clip = "off")+
+  geom_sankey_text(
+    aes(label = node),
+    size = 1.8,
+    color = "black",vjust = 1.5)
+
+pdf("Fig3G_Sankey_marine_PUFA_taxonomy.pdf", width = 5, height = 3)
+print(p)
+dev.off()
+
+
+#### Fig3H
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(ggsankey)
+library(randomcoloR)
+set.seed(1)
+source("../../Function/Reformat_data.R")
+
+##----(1)human-skin PUFA
+df.PUFA<-read_excel("Fig3H1.human-skin.PUFA.taxonomy.xlsx",sheet = 1)
+samples <- unique(df.PUFA$sample)
+
+df.s <- df.PUFA %>%
+  filter_subtaxo("Phylum", "new_Phylum", 5) %>%
+  filter_subtaxo("Class", "new_Class", 5) %>%
+  filter_subtaxo("Order", "new_Order", 5) %>%
+  filter_subtaxo("Family", "new_Family", 5) %>%
+  filter_subtaxo("Genus", "new_Genus", 2) %>%
+  filter_subtaxo("Species", "new_Species", 1)
+
+df.sankey <- df.s %>%
+  make_long(bgc_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+col_num <- length(unique(df.sankey$node))
+my_colors <- distinctColorPalette(col_num)
+
+p1 <- ggplot(df.sankey, aes(
+  x = x, next_x = next_x,
+  node = node, next_node = next_node,
+  fill = factor(node)
+)) +
+  geom_sankey(
+    flow.alpha = 0.4,
+    node.color = "transparent",
+    flow.color = "transparent",
+    width = 0.2
+  ) +
+  scale_fill_manual(values = my_colors) +
+  theme_sankey(base_size = 8) +
+  ggtitle(samples) +
+  scale_x_discrete(labels = c(
+    "bgc_type" = "BGC Type",
+    "new_Phylum" = "Phylum",
+    "new_Class" = "Class",
+    "new_Order" = "Order",
+    "new_Family" = "Family",
+    "new_Genus" = "Genus",
+    "new_Species" = "Species"
+  )) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(5, 10, 5, 20)
+  ) +
+  coord_cartesian(clip = "off")+
+  geom_sankey_text(
+    aes(label = node),
+    size = 1.8,
+    color = "black",vjust = 1.5)
+
+##----(2)human-skin epipeptide?ㄥ𷳝----
+df.PUFA2<-read_excel("Fig3H2.human-skin.epipeptide.taxonomy.xlsx",sheet = 1)
+
+df.s2 <- df.PUFA2 %>%
+  filter_subtaxo("Phylum", "new_Phylum", 5) %>%
+  filter_subtaxo("Class", "new_Class", 5) %>%
+  filter_subtaxo("Order", "new_Order", 5) %>%
+  filter_subtaxo("Family", "new_Family", 5) %>%
+  filter_subtaxo("Genus", "new_Genus", 2) %>%
+  filter_subtaxo("Species", "new_Species", 1)
+
+df.sankey2 <- df.s2 %>%
+  make_long(bgc_type, new_Phylum, new_Class, new_Order, new_Family, new_Genus, new_Species)
+
+col_num2 <- length(unique(df.sankey2$node))
+my_colors2 <- distinctColorPalette(col_num2)
+
+p2 <- ggplot(df.sankey2, aes(
+  x = x, next_x = next_x,
+  node = node, next_node = next_node,
+  fill = factor(node)
+)) +
+  geom_sankey(
+    flow.alpha = 0.4,
+    node.color = "transparent",
+    flow.color = "transparent",
+    width = 0.2
+  ) +
+  scale_fill_manual(values = my_colors2) +
+  theme_sankey(base_size = 8) +
+  ggtitle(samples) +
+  scale_x_discrete(labels = c(
+    "bgc_type" = "BGC Type",
+    "new_Phylum" = "Phylum",
+    "new_Class" = "Class",
+    "new_Order" = "Order",
+    "new_Family" = "Family",
+    "new_Genus" = "Genus",
+    "new_Species" = "Species"
+  )) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(5, 10, 5, 20)
+  ) +
+  coord_cartesian(clip = "off")+
+  geom_sankey_text(
+    aes(label = node),
+    size = 1.8,
+    color = "black",vjust = 1.5)
+
+pdf("Fig3H_Sankey_humanskin_PUFA_epipeptide_taxonomy.pdf", width = 5, height = 2)
+print(p1)
+print(p2)
+dev.off()
+
+
+#### Fig3I
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(ggsankey)
+library(randomcoloR)
+set.seed(1)
+source("../../Function/Reformat_data.R")
+
+df.glycocin<-read_excel("Fig3I.human-gut.glycocin.taxonomy.xlsx",sheet = 1)
+samples <- unique(df.glycocin$sample)
+
+df_sorted <-df.glycocin %>% 
+  arrange(bgc_type, Phylum, Class, Order, Family, Genus, Species)
+order_levels <- unique(c(
+  as.character(unique(df.glycocin$bgc_type)),
+  as.character(unique(df_sorted$Phylum)),
+  as.character(unique(df_sorted$Class)),
+  as.character(unique(df_sorted$Order)),
+  as.character(unique(df_sorted$Family)),
+  as.character(unique(df_sorted$Genus)),
+  as.character(unique(df_sorted$Species))))
+
+df.sankey <- df.glycocin %>%
+  make_long(bgc_type, Phylum, Class, Order, Family, Genus, Species)
+df.sankey$node <- factor(df.sankey$node, levels = order_levels)
+
+my_colors <- distinctColorPalette(length(unique(df.sankey$node)))
+
+p <- ggplot(df.sankey, aes(
+  x = x, next_x = next_x,
+  node = node, next_node = next_node,
+  fill = factor(node)
+)) +
+  geom_sankey(
+    flow.alpha = 0.4,
+    node.color = "transparent",
+    flow.color = "transparent",
+    width = 0.2
+  ) +
+  scale_fill_manual(values = my_colors) +
+  theme_sankey(base_size = 8) +
+  ggtitle(samples) +
+  scale_x_discrete(labels = c(
+    "bgc_type" = "BGC Type"
+  )) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(5, 10, 5, 20)
+  ) +
+  coord_cartesian(clip = "off")+
+  geom_sankey_text(
+    aes(label = node),
+    size = 1.8,
+    color = "black",vjust = 1.8)
+
+pdf("Fig3I_Sankey_humangut_glycocin_taxonomy.pdf", width = 5, height = 3.5)
+print(p)
+dev.off()
