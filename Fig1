@@ -74,3 +74,31 @@ guides(fill = guide_legend(ncol = 1)) +
 coord_flip()
 dev.off()
 
+
+## Fig1C
+library(readxl)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(ggsci)
+library(RColorBrewer)
+source("../Function/Reformat_data.R")
+category=c("marine","soil","human-oral","human-vaginal","human-skin","human-gut",
+          "mouse-gut","pig-gut","Cowrumen","sheep-rumen","horse","panda","ChickenGut",
+          "HoneybeeGut","zebrafish-fecal","non-model-fish-gut")
+bgc.summary <- read_excel("../suppTables/TableS3_BGCtype_total_number.xlsx")
+df.bgc= melt(bgc.summary)
+colnames(df.bgc) = c('group','sample','num')
+df.bgc$sample<-factor(df.bgc$sample,levels = category)
+df.bgc$group<-factor(df.bgc$group,levels = c("RiPPs","NRPS","Terpene","PKSother","PKSI","PKS-NRP_Hybrids","Saccharides","Others"))
+pdf(file="Fig1C_BGC_percentage.pdf", width = 10, height = 6)
+pp = ggplot(data=df.bgc, aes(x=sample, y=num, fill=group)) + geom_bar(stat="identity",width = 0.8,position=position_fill(reverse = FALSE),colour = NA) + 
+  scale_fill_manual(values = c("RiPPs"="#1F77B4FF","NRPS"="#FF7F0EFF","Terpene"="#2CA02CFF","PKSother"= "#D62728FF","PKSI"= "#9467BDFF","PKS-NRP_Hybrids"= "#8C564BFF",
+                               "Saccharides"= "#E377C2FF","Others" = "#7F7F7FFF"), guide = "legend", aesthetics = "fill")  +
+  cowplot::theme_cowplot() +
+  theme(axis.title.x = element_blank(),axis.text.x = element_text(angle = 45,size = 15,hjust = 0.95,vjust = 0.95))+
+  labs(y='Relative abundance (%)',fill = "Group") +
+  scale_y_continuous(labels = function(x) x * 100)
+print(pp)
+dev.off()
+
