@@ -1,4 +1,4 @@
-#### Fig2A
+##### Fig2A #####
 library(dplyr)
 library(ggplot2)
 library(ggalluvial)
@@ -27,7 +27,7 @@ print(p)
 dev.off()
 
 
-#### Fig2B
+##### Fig2B #####
 library(readxl)
 library(dplyr)
 library(reshape2)
@@ -54,7 +54,7 @@ print(p)
 dev.off()
 
 
-#### Fig2C
+##### Fig2C #####
 library(readxl)
 library(dplyr)
 library(reshape2)
@@ -80,7 +80,7 @@ print(p)
 dev.off()
 
 
-#### Fig2D
+##### Fig2D #####
 library(dplyr)
 library(ggplot2)
 library(readxl)
@@ -161,7 +161,7 @@ print(p)
 dev.off()
 
 
-#### Fig2E
+##### Fig2E #####
 library(dplyr)
 library(ggplot2)
 library(readxl)
