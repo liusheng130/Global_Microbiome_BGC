@@ -1,4 +1,4 @@
-#### Fig4A ####
+##### Fig4A #####
 library(ggplot2)
 library(hexbin)
 library(viridis)
@@ -24,7 +24,7 @@ n_samples <- nrow(df_log)
 # 创建自定义颜色梯度（深黄到深蓝）
 yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
 
-pdf("human-gut.thioamitides_archaeal-RiPP.cor.pdf",width=4.0,height=2.8)
+pdf("human-gut.thioamitides_archaeal-RiPP.cor.pdf",width=5,height=4)
 p1 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
   geom_hex(bins = 30) +  # 对应 Python 的 gridsize
   scale_fill_gradientn(
@@ -83,7 +83,7 @@ cor_test <- cor.test(df_log$thioamitides, df_log$archaeal_RiPP, method = "spearm
 p_value <- cor_test$p.value
 n_samples <- nrow(df_log)
 
-pdf("Cowrumen.thioamitides_archaeal-RiPP.cor.pdf",width=4.0,height=2.8)
+pdf("Cowrumen.thioamitides_archaeal-RiPP.cor.pdf",width=5,height=4)
 p2 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
   geom_hex(bins = 30) +  # 对应 Python 的 gridsize
   scale_fill_gradientn(
@@ -145,7 +145,7 @@ n_samples <- nrow(df_log)
 # 创建自定义颜色梯度（深黄到深蓝）
 yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
 
-pdf("sheep-rumen.thioamitides_archaeal-RiPP.cor.pdf",width=4.0,height=2.8)
+pdf("sheep-rumen.thioamitides_archaeal-RiPP.cor.pdf",width=5,height=4)
 p3 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
   geom_hex(bins = 30) +  # 对应 Python 的 gridsize
   scale_fill_gradientn(
@@ -207,7 +207,7 @@ n_samples <- nrow(df_log)
 # 创建自定义颜色梯度（深黄到深蓝）
 yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
 
-pdf("pig-gut.thioamitides_archaeal-RiPP.cor.pdf",width=4.0,height=2.8)
+pdf("pig-gut.thioamitides_archaeal-RiPP.cor.pdf",width=5,height=4)
 p4 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
   geom_hex(bins = 30) +  # 对应 Python 的 gridsize
   scale_fill_gradientn(
@@ -250,7 +250,7 @@ print(p4)
 dev.off()
 
 
-#### Fig4B ####
+##### Fig4B #####
 library(tidyverse)  
 library(ggalluvial) 
 library(patchwork)   
@@ -355,7 +355,8 @@ p_main_simple + plot_spacer() + legend_panel +
 dev.off()
 
 
-#### Fig4C ####
+##### Fig4C #####  
+# 1) human-gut phenazine VS NAGGN
 df <- read.delim("human-gut.phenazine_NAGGN.xls", 
                  sep = "\t", 
                  header = TRUE, 
@@ -375,7 +376,7 @@ n_samples <- nrow(df_log)
 # 创建自定义颜色梯度（深黄到深蓝）
 yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
 
-pdf("human-gut.phenazine_NAGGN.cor.pdf",width=3.3,height=2.8)
+pdf("human-gut.phenazine_NAGGN.cor.pdf",width=5,height=4)
 p1 <- ggplot(df_log, aes(x = phenazine, y = NAGGN)) +
   geom_hex(bins = 30) +  # 对应 Python 的 gridsize
   scale_fill_gradientn(
@@ -417,3 +418,414 @@ p1 <- ggplot(df_log, aes(x = phenazine, y = NAGGN)) +
 print(p1)
 dev.off()
 
+#2) honybee-gut phenazine VS NAGGN
+df <- read.delim("honybee-gut.phenazine_NAGGN.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+# 转置数据框
+#df_transposed <- t(df)
+#df_numeric <- as.matrix(df_transposed)
+#df_numeric <- apply(df_numeric, 2, as.numeric) 
+# 对数据进行 log(x+1) 转换
+df_log <- log1p(df)
+
+correlation <- cor(df_log$phenazine, df_log$NAGGN, method = "spearman")
+cor_test <- cor.test(df_log$phenazine, df_log$NAGGN, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+# 创建自定义颜色梯度（深黄到深蓝）
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("honybee-gut.phenazine_NAGGN.cor.pdf",width=5,height=4)
+p2 <- ggplot(df_log, aes(x = phenazine, y = NAGGN)) +
+  geom_hex(bins = 30) +  # 对应 Python 的 gridsize
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  # 对数转换颜色尺度
+    name = "Number",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  # 10的指数断点
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  # 10^x格式
+    guide = guide_colorbar(
+      title.theme = element_text(size =11)  # 设置标题字体大小
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "Phenazine Abundance",
+    y = "NAGGN Abundance",
+    title = paste("Phenazine vs NAGGN"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 0.7, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  # 设置字体
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  # 去掉网格线
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+
+print(p2)
+dev.off()
+
+#3) non-model-fish-gut phenazine VS NAGGN
+df <- read.delim("non-model-fish-gut.phenazine_NAGGN.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+# 转置数据框
+#df_transposed <- t(df)
+#df_numeric <- as.matrix(df_transposed)
+#df_numeric <- apply(df_numeric, 2, as.numeric) 
+# 对数据进行 log(x+1) 转换
+df_log <- log1p(df)
+
+correlation <- cor(df_log$phenazine, df_log$NAGGN, method = "spearman")
+cor_test <- cor.test(df_log$phenazine, df_log$NAGGN, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+# 创建自定义颜色梯度（深黄到深蓝）
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("non-model-fish-gut.phenazine_NAGGN.cor.pdf",width=5,height=4)
+p3 <- ggplot(df_log, aes(x = phenazine, y = NAGGN)) +
+  geom_hex(bins = 30) +  # 对应 Python 的 gridsize
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  # 对数转换颜色尺度
+    name = "Number",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  # 10的指数断点
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  # 10^x格式
+    guide = guide_colorbar(
+      title.theme = element_text(size =11)  # 设置标题字体大小
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "Phenazine Abundance",
+    y = "NAGGN Abundance",
+    title = paste("Phenazine vs NAGGN"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 0.7, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  # 设置字体
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  # 去掉网格线
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+
+print(p3)
+dev.off()
+
+
+##### Fig4D #####  
+library(ggplot2)
+library(hexbin)
+library(viridis)
+library(dplyr)
+# 1) human-gut NRP-metallophore vs isocyanide
+df <- read.delim("human-gut.NRP-metallophore_isocyanide_ectoine.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+df_log <- log1p(df)
+
+correlation <- cor(df_log$NRP_metallophore, df_log$isocyanide, method = "spearman")
+cor_test <- cor.test(df_log$NRP_metallophore, df_log$isocyanide, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("human-gut.NRP-metallophore_isocyanide.cor.pdf",width=5,height=4)
+p1 <- ggplot(df_log, aes(x = NRP_metallophore, y = isocyanide)) +
+  geom_hex(bins = 30) +  
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  
+    name = "Number",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  
+    labels = scales::trans_format("log10", scales::math_format(10^.x)), 
+    guide = guide_colorbar(
+      title.theme = element_text(size =11) 
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "NRP_metallophore Abundance",
+    y = "isocyanide Abundance",
+    title = paste("NRP-metallophore vs isocyanide"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.036, y = 0.7, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(), 
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+print(p1)
+dev.off()
+
+# 2) human-gut ectoine vs isocyanide
+df <- read.delim("human-gut.NRP-metallophore_isocyanide_ectoine.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+df_log <- log1p(df)
+
+correlation <- cor(df_log$ectoine, df_log$isocyanide, method = "spearman")
+cor_test <- cor.test(df_log$ectoine, df_log$isocyanide, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("human-gut.ectoine_isocyanide.cor.pdf",width=5,height=4)
+p2 <- ggplot(df_log, aes(x = ectoine, y = isocyanide)) +
+  geom_hex(bins = 30) +  
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log", 
+    name = "Number",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  
+    labels = scales::trans_format("log10", scales::math_format(10^.x)), 
+    guide = guide_colorbar(
+      title.theme = element_text(size =11) 
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "ectoine Abundance",
+    y = "isocyanide Abundance",
+    title = paste("ectoine vs isocyanide"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.036, y = 0.7, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(), 
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+print(p2)
+dev.off()
+
+
+##### Fig4E #####  
+library(ggplot2)
+library(hexbin)
+library(viridis)
+library(dplyr)
+# 1) marine furan VS T2PKS
+df <- read.delim("marine.furan_T2PKS.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+df_log <- log1p(df)
+
+correlation <- cor(df_log$furan, df_log$T2PKS, method = "spearman")
+cor_test <- cor.test(df_log$furan, df_log$T2PKS, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("marine.furan_T2PKS.cor.pdf",width=5,height=4)
+p1 <- ggplot(df_log, aes(x = furan, y = T2PKS)) +
+  geom_hex(bins = 30) +  
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  
+    name = "Number",
+    breaks = scales::trans_breaks("log10", function(x) 10^x), 
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  
+    guide = guide_colorbar(
+      title.theme = element_text(size =11) 
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "furan Abundance",
+    y = "T2PKS Abundance",
+    title = paste("furan vs T2PKS"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 1.0, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+print(p1)
+dev.off()
+
+# 2) marine furan vs NRPS,redox-cofactor
+df <- read.delim("marine.furan_NRPS_redox-cofactor.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+df_log <- log1p(df)
+
+correlation <- cor(df_log$furan, df_log$NRPS_redoxcofactor, method = "spearman")
+cor_test <- cor.test(df_log$furan, df_log$NRPS_redoxcofactor, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("marine.furan_NRPS_redox-cofactor.cor.pdf",width=5,height=4)
+p2 <- ggplot(df_log, aes(x = furan, y = NRPS_redoxcofactor)) +
+  geom_hex(bins = 30) +  
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log",  
+    name = "Number",
+    breaks = scales::trans_breaks("log10", function(x) 10^x),  
+    labels = scales::trans_format("log10", scales::math_format(10^.x)),  
+    guide = guide_colorbar(
+      title.theme = element_text(size =11)  
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "furan Abundance",
+    y = "NRPS,redox-cofactor Abundance",
+    title = paste("furan vs NRPS,redox-cofactor"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.1, y = 1.0, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"),  
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(), 
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+print(p2)
+dev.off()
+
+# 3) marine T2PKS vs NRPS,redox-cofactor
+df <- read.delim("marine.T2PKS_NRPS_redox-cofactor.xls", 
+                 sep = "\t", 
+                 header = TRUE, 
+                 check.names = F)
+df_log <- log1p(df)
+
+correlation <- cor(df_log$T2PKS, df_log$NRPS_redoxcofactor, method = "spearman")
+cor_test <- cor.test(df_log$T2PKS, df_log$NRPS_redoxcofactor, method = "spearman")
+p_value <- cor_test$p.value
+n_samples <- nrow(df_log)
+
+yellow_blue_colors <- c("#FFCC00", "#FF9900", "#FF6600", "#3399FF", "#0066CC", "#004499", "#002266")
+
+pdf("marine.T2PKS_NRPS_redox-cofactor.cor.pdf",width=5,height=4)
+p3 <- ggplot(df_log, aes(x = T2PKS, y = NRPS_redoxcofactor)) +
+  geom_hex(bins = 30) + 
+  scale_fill_gradientn(
+    colors = yellow_blue_colors,
+    trans = "log", 
+    name = "Number",
+    breaks = scales::trans_breaks("log10", function(x) 10^x), 
+    labels = scales::trans_format("log10", scales::math_format(10^.x)), 
+    guide = guide_colorbar(
+      title.theme = element_text(size =11) 
+    )
+  ) +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "solid", linewidth = 1) +
+  labs(
+    x = "T2PKS Abundance",
+    y = "NRPS,redox-cofactor Abundance",
+    title = paste("T2PKS vs NRPS,redox-cofactor"),
+    subtitle = paste("Spearman r =", round(correlation, 3), ", p =", format(p_value, scientific = TRUE))
+  ) +
+  annotate("label", 
+           x = 0.04, y = 0.75, 
+           label = paste("N =", format(n_samples, big.mark = ","), 
+                        "\nr =", round(correlation, 3), 
+                        "\np =", format(p_value, scientific = TRUE)),
+           hjust = 0, vjust = 1, 
+           size = 4,
+           color = "black",
+           fill = "wheat", alpha = 0.8) +
+  theme(
+    text = element_text(family = "Helvetica"), 
+    plot.title = element_text(size = 10, face = "bold"),
+    plot.subtitle = element_text(size = 10),
+    axis.text.x=element_text(size=10),
+    axis.text.y=element_text(size=10),
+    panel.grid = element_blank(),  
+    panel.border = element_rect(color = "black", linewidth = 0.6)
+  )
+print(p3)
+dev.off()
