@@ -4,7 +4,7 @@ library(hexbin)
 library(viridis)
 library(dplyr)
 
-# 1)
+# 1) human-gut thioamitides VS archaeal-RiPP
 df <- read.delim("human-gut.thioamitides_archaeal-RiPP.xls", 
                  sep = "\t", 
                  header = TRUE, 
@@ -62,11 +62,10 @@ p1 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
     panel.grid = element_blank(),  # 去掉网格线
     panel.border = element_rect(color = "black", linewidth = 0.6)
   )
-
 print(p1)
 dev.off()
 
-# 2)
+# 2) Cow-rumen thioamitides VS archaeal-RiPP
 df <- read.delim("Cowrumen.thioamitides_archaeal-RiPP.xls", 
                  sep = "\t", 
                  header = TRUE, 
@@ -121,11 +120,10 @@ p2 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
     panel.grid = element_blank(),  # 去掉网格线
     panel.border = element_rect(color = "black", linewidth = 0.6)
   )
-
 print(p2)
 dev.off()
 
-# 3)
+# 3) sheep-rumen thioamitides VS archaeal-RiPP
 df <- read.delim("sheep-rumen.thioamitides_archaeal-RiPP.xls", 
                  sep = "\t", 
                  header = TRUE, 
@@ -183,11 +181,10 @@ p3 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
     panel.grid = element_blank(),  # 去掉网格线
     panel.border = element_rect(color = "black", linewidth = 0.6)
   )
-
 print(p3)
 dev.off()
 
-# 4)
+# 4) pig-gut thioamitides VS archaeal-RiPP
 df <- read.delim("pig-gut.thioamitides_archaeal-RiPP.xls", 
                  sep = "\t", 
                  header = TRUE, 
@@ -245,7 +242,6 @@ p4 <- ggplot(df_log, aes(x = thioamitides, y = archaeal_RiPP)) +
     panel.grid = element_blank(),  # 去掉网格线
     panel.border = element_rect(color = "black", linewidth = 0.6)
   )
-
 print(p4)
 dev.off()
 
@@ -258,7 +254,6 @@ library(readxl)
 library(ggplot2)
 library(dplyr)
 library(randomcoloR)
-set.seed(1)
 source("../../Function/Reformat_data.R")
 df.spe <-read_excel("Fig4B.archaealRiPP-thioamitides.alluvium.taxonomy.xlsx",sheet = 1)
 df.spe <- df.spe %>%
@@ -341,8 +336,7 @@ create_level_legends <- function(data) {
       )+ coord_cartesian(clip = "off")
     
     plots[[level]] <- p
-  }
-  
+  } 
   return(plots)
 }
 
@@ -414,7 +408,6 @@ p1 <- ggplot(df_log, aes(x = phenazine, y = NAGGN)) +
     panel.grid = element_blank(),  # 去掉网格线
     panel.border = element_rect(color = "black", linewidth = 0.6)
   )
-
 print(p1)
 dev.off()
 
@@ -476,7 +469,6 @@ p2 <- ggplot(df_log, aes(x = phenazine, y = NAGGN)) +
     panel.grid = element_blank(),  # 去掉网格线
     panel.border = element_rect(color = "black", linewidth = 0.6)
   )
-
 print(p2)
 dev.off()
 
@@ -538,7 +530,6 @@ p3 <- ggplot(df_log, aes(x = phenazine, y = NAGGN)) +
     panel.grid = element_blank(),  # 去掉网格线
     panel.border = element_rect(color = "black", linewidth = 0.6)
   )
-
 print(p3)
 dev.off()
 
