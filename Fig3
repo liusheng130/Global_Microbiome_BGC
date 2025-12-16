@@ -1,4 +1,4 @@
-#### Fig3A
+##### Fig3A #####
 library(UpSetR)
 library("ggplot2")
 load("subclass.Rdata")
@@ -19,7 +19,7 @@ upset(
 dev.off()
 
 
-#### Fig3B
+##### Fig3B #####
 library(pheatmap) 
 library(readxl)
 animals=c("marine","soil","human-oral","human-vaginal","human-skin","human-gut",
@@ -46,7 +46,7 @@ pheatmap(df.BGCtype.com,
 dev.off()
 
 
-#### Fig3C
+##### Fig3C #####
 library(VennDiagram)
 c1 <- 67 
 c2 <- 60 
@@ -90,7 +90,7 @@ grid.draw(venn.plot)
 dev.off()
 
 
-#### Fig3D
+##### Fig3D #####
 library(UpSetR)
 load("mam_subclass.Rdata")
 pdf("Fig3D_upset_subclass_mammal.pdf",width=8,height = 6)
@@ -108,7 +108,7 @@ upset(
 dev.off()
 
 
-#### Fig3E
+##### Fig3E #####
 argv <- commandArgs(T)
 library("ggplot2")
 library("reshape2")
@@ -127,7 +127,7 @@ dev.off()
 
 
 
-#### Fig3F
+##### Fig3F #####
 library(dplyr)
 library(ggplot2)
 library(readxl)
@@ -191,7 +191,7 @@ print(p)
 dev.off()
 
 
-#### Fig3G
+##### Fig3G #####
 library(dplyr)
 library(ggplot2)
 library(readxl)
@@ -272,7 +272,7 @@ print(p)
 dev.off()
 
 
-#### Fig3H
+##### Fig3H #####
 library(dplyr)
 library(ggplot2)
 library(readxl)
@@ -390,7 +390,7 @@ print(p2)
 dev.off()
 
 
-#### Fig3I
+##### Fig3I #####
 library(dplyr)
 library(ggplot2)
 library(readxl)
