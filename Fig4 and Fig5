@@ -1,3 +1,4 @@
+##### Fig4 #####  
 ##### Fig4A #####
 library(ggplot2)
 library(hexbin)
@@ -348,8 +349,8 @@ p_main_simple + plot_spacer() + legend_panel +
   plot_layout(widths = c(2, -0.5, 1))  
 dev.off()
 
-
-##### Fig4C #####  
+##### Fig5 #####  
+##### Fig5A #####  
 # 1) human-gut phenazine VS NAGGN
 df <- read.delim("human-gut.phenazine_NAGGN.xls", 
                  sep = "\t", 
@@ -534,7 +535,7 @@ print(p3)
 dev.off()
 
 
-##### Fig4D #####  
+##### Fig5B #####  
 library(ggplot2)
 library(hexbin)
 library(viridis)
@@ -651,7 +652,7 @@ print(p2)
 dev.off()
 
 
-##### Fig4E #####  
+##### Fig5D #####  
 library(ggplot2)
 library(hexbin)
 library(viridis)
