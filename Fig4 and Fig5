@@ -349,6 +349,8 @@ p_main_simple + plot_spacer() + legend_panel +
   plot_layout(widths = c(2, -0.5, 1))  
 dev.off()
 
+
+
 ##### Fig5 #####  
 ##### Fig5A #####  
 # 1) human-gut phenazine VS NAGGN
